@@ -1,1 +1,679 @@
-# tidal-qi
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tidal Qi — Breathe with Precision</title>
+  <meta name="description" content="Tidal Qi captures the tidal nature of your breath — real-time respiratory metrics for athletes who train at the edges." />
+
+  <!-- Favicon: breathing waveform SVG -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230D2B4A'/%3E%3Cpath d='M3 16 Q6 16 7 13 Q9 7 11 13 Q13 19 15 11 Q17 3 19 11 Q21 19 23 13 Q25 7 27 13 Q28 16 29 16' stroke='%2364B4DC' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:    '#0D2B4A',
+            ocean:   '#1A5FA0',
+            steel:   '#3282B4',
+            sky:     '#64B4DC',
+            mist:    '#A8D4EC',
+            foam:    '#E8F4FA',
+            slate:   '#4A6B82',
+            chalk:   '#F2F7FC',
+          },
+          fontFamily: {
+            display: ['"DM Serif Display"', 'Georgia', 'serif'],
+            sans:    ['"DM Sans"', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'wave-draw': 'waveDraw 3s ease-in-out infinite alternate',
+            'float':     'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite',
+          },
+          keyframes: {
+            waveDraw: {
+              '0%':   { strokeDashoffset: '800' },
+              '100%': { strokeDashoffset: '0' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%':      { transform: 'translateY(-12px)' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background-color: #0D2B4A;
+      color: #F2F7FC;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Breathing waveform animation ── */
+    .wave-path {
+      stroke-dasharray: 800;
+      stroke-dashoffset: 800;
+      animation: waveDraw 2.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .wave-path-2 {
+      stroke-dasharray: 800;
+      stroke-dashoffset: 800;
+      animation: waveDraw 2.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
+      opacity: 0.35;
+    }
+    .wave-path-3 {
+      stroke-dasharray: 800;
+      stroke-dashoffset: 800;
+      animation: waveDraw 2.8s cubic-bezier(0.4, 0, 0.2, 1) 0.8s forwards;
+      opacity: 0.15;
+    }
+    @keyframes waveDraw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* ── Floating phone mockup ── */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+    .float-anim { animation: float 5s ease-in-out infinite; }
+
+    /* ── Nav link hover: underline slides from left ── */
+    .nav-link {
+      position: relative;
+      text-decoration: none;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1.5px;
+      background: #64B4DC;
+      transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* ── CTA button hover: lift + shadow ── */
+    .btn-primary {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(50, 130, 180, 0.45);
+    }
+
+    /* ── Metric card hover: slide right ── */
+    .metric-card {
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+    .metric-card:hover {
+      transform: translateX(4px);
+      border-color: #3282B4;
+    }
+
+    /* ── Support mailto button: fill from left ── */
+    .btn-mailto {
+      position: relative;
+      overflow: hidden;
+      z-index: 0;
+      transition: color 0.3s ease;
+    }
+    .btn-mailto::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #3282B4;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: -1;
+    }
+    .btn-mailto:hover::before { transform: scaleX(1); }
+    .btn-mailto:hover { color: #F2F7FC; }
+
+    /* ── FAQ accordion ── */
+    .faq-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.25s ease;
+      opacity: 0;
+    }
+    .faq-body.open {
+      max-height: 400px;
+      opacity: 1;
+    }
+    .faq-chevron {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .faq-chevron.open { transform: rotate(180deg); }
+
+    /* ── Sticky nav blur ── */
+    .nav-blur {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(13, 43, 74, 0.85);
+      border-bottom: 1px solid rgba(100, 180, 220, 0.12);
+    }
+
+    /* ── Section fade-in on scroll ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Privacy policy content styling ── */
+    .privacy-content h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #64B4DC;
+      margin: 1.5rem 0 0.5rem;
+    }
+    .privacy-content p {
+      color: #A8D4EC;
+      line-height: 1.75;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .privacy-content strong {
+      color: #E8F4FA;
+    }
+    .privacy-content ul {
+      list-style: disc;
+      padding-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .privacy-content ul li {
+      color: #A8D4EC;
+      font-size: 0.9rem;
+      line-height: 1.75;
+    }
+
+    /* ── App Store badge placeholder ── */
+    .badge-placeholder {
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .badge-placeholder:hover {
+      opacity: 0.8;
+      transform: scale(0.98);
+    }
+
+    /* ── Gradient mesh overlay ── */
+    .mesh-bg {
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 30%, rgba(50, 130, 180, 0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 80% 70%, rgba(26, 95, 160, 0.22) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 40% at 50% 100%, rgba(100, 180, 220, 0.08) 0%, transparent 60%);
+    }
+
+    /* ── Noise grain overlay ── */
+    .grain::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      z-index: 9999;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0D2B4A; }
+    ::-webkit-scrollbar-thumb { background: #1A5FA0; border-radius: 3px; }
+  </style>
+</head>
+<body class="grain">
+
+  <!-- ══════════════════════════════════════ NAV ══════════════════════════════════════ -->
+  <nav class="nav-blur fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5 group">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="7" fill="#0D2B4A"/>
+          <path d="M3 16 Q6 16 7 13 Q9 7 11 13 Q13 19 15 11 Q17 3 19 11 Q21 19 23 13 Q25 7 27 13 Q28 16 29 16"
+            stroke="#64B4DC" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="font-display text-foam text-lg tracking-tight group-hover:text-sky transition-colors duration-200">Tidal Qi</span>
+      </a>
+      <div class="hidden md:flex items-center gap-7 text-sm text-mist font-medium">
+        <a href="#features" class="nav-link hover:text-sky transition-colors duration-200">Features</a>
+        <a href="#support"  class="nav-link hover:text-sky transition-colors duration-200">Support</a>
+        <a href="#privacy"  class="nav-link hover:text-sky transition-colors duration-200">Privacy</a>
+      </div>
+      <a href="#hero" class="md:hidden text-mist hover:text-sky transition-colors">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════ HERO ══════════════════════════════════════ -->
+  <section id="hero" class="relative min-h-screen flex items-center mesh-bg overflow-hidden pt-14">
+
+    <!-- Decorative circles -->
+    <div class="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-ocean opacity-10 blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 -left-24 w-72 h-72 rounded-full bg-steel opacity-10 blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-5xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16 items-center w-full">
+
+      <!-- Left: copy -->
+      <div>
+        <div class="inline-flex items-center gap-2 bg-ocean/20 border border-steel/30 rounded-full px-3.5 py-1 text-sky text-xs font-medium tracking-wide mb-6">
+          <span class="w-1.5 h-1.5 rounded-full bg-sky animate-pulse-slow inline-block"></span>
+          Real-time respiratory metrics
+        </div>
+
+        <h1 class="font-display text-5xl md:text-6xl lg:text-7xl text-foam leading-tight mb-5">
+          Breathe<br />
+          <em class="not-italic text-sky">with</em><br />
+          precision.
+        </h1>
+
+        <p class="text-mist text-lg leading-relaxed mb-8 max-w-md">
+          Tidal Qi captures the tidal rhythm of your breath — rate, expansion, pressure, force, and variability — so you can train at your physiological edge.
+        </p>
+
+        <!-- App Store badge (placeholder) -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <a href="#" class="badge-placeholder inline-flex items-center gap-3 bg-foam text-navy rounded-xl px-5 py-3 font-medium text-sm btn-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            Download on the App Store
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: animated waveform display -->
+      <div class="relative flex justify-center float-anim">
+        <div class="relative w-64 md:w-72 lg:w-80">
+          <!-- Phone frame -->
+          <div class="bg-navy border border-steel/40 rounded-[2.5rem] p-4 shadow-2xl shadow-navy/50">
+            <div class="bg-gradient-to-b from-ocean/30 to-navy rounded-[1.8rem] overflow-hidden aspect-[9/19.5] flex flex-col">
+
+              <!-- Status bar sim -->
+              <div class="flex justify-between items-center px-5 pt-4 pb-1">
+                <span class="text-mist text-xs font-medium">9:41</span>
+                <div class="flex gap-1 items-center">
+                  <div class="w-3.5 h-2 border border-mist/50 rounded-sm relative">
+                    <div class="absolute inset-0.5 right-0.5 bg-mist/50 rounded-sm" style="right:30%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- App header -->
+              <div class="px-4 pt-2 pb-3">
+                <p class="text-sky text-xs font-medium tracking-widest uppercase mb-0.5">Live Session</p>
+                <p class="font-display text-foam text-xl">Tidal Qi</p>
+              </div>
+
+              <!-- Waveform SVG -->
+              <div class="mx-3 mb-3 bg-navy/60 rounded-2xl p-3">
+                <p class="text-mist text-[10px] font-medium mb-2 tracking-wide">BREATH WAVEFORM</p>
+                <svg viewBox="0 0 220 60" class="w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path class="wave-path-3" d="M0 30 Q10 30 12 22 Q16 8 20 22 Q24 36 28 18 Q32 0 36 18 Q40 36 44 22 Q48 8 52 22 Q56 36 60 24 Q62 18 64 30 Q74 30 76 22 Q80 8 84 22 Q88 36 92 18 Q96 0 100 18 Q104 36 108 22 Q112 8 116 22 Q120 36 124 24 Q126 18 128 30 Q138 30 140 22 Q144 8 148 22 Q152 36 156 18 Q160 0 164 18 Q168 36 172 22 Q176 8 180 22 Q184 36 188 24 Q190 18 192 30 L220 30"
+                    stroke="#64B4DC" stroke-width="1.5" stroke-linecap="round"/>
+                  <path class="wave-path-2" d="M0 30 Q10 30 12 22 Q16 8 20 22 Q24 36 28 18 Q32 0 36 18 Q40 36 44 22 Q48 8 52 22 Q56 36 60 24 Q62 18 64 30 Q74 30 76 22 Q80 8 84 22 Q88 36 92 18 Q96 0 100 18 Q104 36 108 22 Q112 8 116 22 Q120 36 124 24 Q126 18 128 30 Q138 30 140 22 Q144 8 148 22 Q152 36 156 18 Q160 0 164 18 Q168 36 172 22 Q176 8 180 22 Q184 36 188 24 Q190 18 192 30 L220 30"
+                    stroke="#3282B4" stroke-width="1.5" stroke-linecap="round" transform="translate(0,4)"/>
+                  <path class="wave-path" d="M0 30 Q10 30 12 22 Q16 8 20 22 Q24 36 28 18 Q32 0 36 18 Q40 36 44 22 Q48 8 52 22 Q56 36 60 24 Q62 18 64 30 Q74 30 76 22 Q80 8 84 22 Q88 36 92 18 Q96 0 100 18 Q104 36 108 22 Q112 8 116 22 Q120 36 124 24 Q126 18 128 30 Q138 30 140 22 Q144 8 148 22 Q152 36 156 18 Q160 0 164 18 Q168 36 172 22 Q176 8 180 22 Q184 36 188 24 Q190 18 192 30 L220 30"
+                    stroke="#A8D4EC" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <!-- Metric grid -->
+              <div class="grid grid-cols-2 gap-2 mx-3 mb-3">
+                <div class="bg-navy/60 rounded-xl p-2.5">
+                  <p class="text-mist text-[9px] font-medium tracking-wide mb-0.5">BREATH RATE</p>
+                  <p class="font-display text-sky text-lg leading-none">14.2</p>
+                  <p class="text-slate text-[9px] mt-0.5">breaths/min</p>
+                </div>
+                <div class="bg-navy/60 rounded-xl p-2.5">
+                  <p class="text-mist text-[9px] font-medium tracking-wide mb-0.5">EXPANSION</p>
+                  <p class="font-display text-steel text-lg leading-none">+3.8</p>
+                  <p class="text-slate text-[9px] mt-0.5">cm</p>
+                </div>
+                <div class="bg-navy/60 rounded-xl p-2.5">
+                  <p class="text-mist text-[9px] font-medium tracking-wide mb-0.5">PRESSURE</p>
+                  <p class="font-display text-sky text-lg leading-none">18.4</p>
+                  <p class="text-slate text-[9px] mt-0.5">cmH₂O</p>
+                </div>
+                <div class="bg-navy/60 rounded-xl p-2.5">
+                  <p class="text-mist text-[9px] font-medium tracking-wide mb-0.5">VARIABILITY</p>
+                  <p class="font-display text-steel text-lg leading-none">92%</p>
+                  <p class="text-slate text-[9px] mt-0.5">HRV-linked</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <!-- Glow under phone -->
+          <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 w-48 h-12 bg-steel/30 blur-2xl rounded-full pointer-events-none"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scroll cue -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-mist/50 text-xs">
+      <span class="tracking-widest uppercase text-[10px]">scroll</span>
+      <svg width="16" height="20" viewBox="0 0 16 20" fill="none" class="animate-bounce">
+        <path d="M8 2v14M3 13l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════ FEATURES ══════════════════════════════════════ -->
+  <section id="features" class="py-24 md:py-32 bg-navy relative overflow-hidden">
+
+    <div class="absolute inset-0 mesh-bg pointer-events-none"></div>
+
+    <div class="max-w-5xl mx-auto px-6 relative">
+      <div class="reveal mb-16 md:mb-20">
+        <p class="text-sky text-xs font-medium tracking-widest uppercase mb-3">What we measure</p>
+        <h2 class="font-display text-4xl md:text-5xl text-foam">
+          Every dimension<br />
+          <em class="not-italic text-steel">of your breath.</em>
+        </h2>
+      </div>
+
+      <div class="space-y-4">
+
+        <div class="reveal metric-card border border-steel/20 bg-ocean/10 rounded-2xl p-6 md:p-7 flex flex-col md:flex-row md:items-center gap-5">
+          <div class="w-12 h-12 rounded-xl bg-steel/20 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64B4DC" stroke-width="1.8" stroke-linecap="round">
+              <path d="M2 12 Q5 4 8 12 Q11 20 14 10 Q17 2 20 10 Q22 16 24 12"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-display text-xl text-foam mb-1.5">Breathing Rate</h3>
+            <p class="text-mist text-sm leading-relaxed">Continuous breaths-per-minute tracking with beat-to-beat resolution. Spot overbreathing before it limits your performance.</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="font-display text-3xl text-sky">14</span>
+            <span class="text-slate text-sm ml-1">br/min</span>
+          </div>
+        </div>
+
+        <div class="reveal metric-card border border-steel/20 bg-ocean/10 rounded-2xl p-6 md:p-7 flex flex-col md:flex-row md:items-center gap-5">
+          <div class="w-12 h-12 rounded-xl bg-steel/20 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64B4DC" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" opacity="0.5"/><circle cx="12" cy="12" r="10" opacity="0.25"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-display text-xl text-foam mb-1.5">Chest Expansion</h3>
+            <p class="text-mist text-sm leading-relaxed">Millimetre-precise rib cage movement per breath. Train diaphragmatic depth and symmetry over every session.</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="font-display text-3xl text-sky">+3.8</span>
+            <span class="text-slate text-sm ml-1">cm</span>
+          </div>
+        </div>
+
+        <div class="reveal metric-card border border-steel/20 bg-ocean/10 rounded-2xl p-6 md:p-7 flex flex-col md:flex-row md:items-center gap-5">
+          <div class="w-12 h-12 rounded-xl bg-steel/20 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64B4DC" stroke-width="1.8" stroke-linecap="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-display text-xl text-foam mb-1.5">Respiratory Pressure & Force</h3>
+            <p class="text-mist text-sm leading-relaxed">Inhalation and exhalation pressure curves in real time. Understand the mechanical effort behind each tidal cycle.</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="font-display text-3xl text-sky">18.4</span>
+            <span class="text-slate text-sm ml-1">cmH₂O</span>
+          </div>
+        </div>
+
+        <div class="reveal metric-card border border-steel/20 bg-ocean/10 rounded-2xl p-6 md:p-7 flex flex-col md:flex-row md:items-center gap-5">
+          <div class="w-12 h-12 rounded-xl bg-steel/20 flex items-center justify-center flex-shrink-0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64B4DC" stroke-width="1.8" stroke-linecap="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-display text-xl text-foam mb-1.5">Heart Rate Variability — Linked</h3>
+            <p class="text-mist text-sm leading-relaxed">Respiratory sinus arrhythmia decoded alongside breath timing, revealing autonomic tone without a chest strap.</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="font-display text-3xl text-sky">92%</span>
+            <span class="text-slate text-sm ml-1">coherence</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════ SUPPORT ══════════════════════════════════════ -->
+  <section id="support" class="py-24 md:py-32 relative" style="background: linear-gradient(180deg, #0D2B4A 0%, #0a2240 100%);">
+
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="reveal mb-14">
+        <p class="text-sky text-xs font-medium tracking-widest uppercase mb-3">Help & FAQ</p>
+        <h2 class="font-display text-4xl md:text-5xl text-foam">Support</h2>
+      </div>
+
+      <!-- FAQ accordions -->
+      <div class="space-y-3 mb-14 reveal">
+
+        <div class="border border-steel/20 rounded-2xl overflow-hidden bg-ocean/8">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-foam font-medium text-sm md:text-base">What sensors does Tidal Qi require?</span>
+            <svg class="faq-chevron flex-shrink-0 ml-4" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64B4DC" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-body">
+            <p class="text-mist text-sm leading-relaxed px-6 pb-5">Tidal Qi connects to compatible wearable chest-band sensors via Bluetooth. The app will show available hardware in Settings → Devices. Without hardware, you can still browse the reference library and review past sessions.</p>
+          </div>
+        </div>
+
+        <div class="border border-steel/20 rounded-2xl overflow-hidden bg-ocean/8">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-foam font-medium text-sm md:text-base">How do I reset my profile or clear session data?</span>
+            <svg class="faq-chevron flex-shrink-0 ml-4" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64B4DC" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-body">
+            <p class="text-mist text-sm leading-relaxed px-6 pb-5">Go to the Profile tab → tap your name → scroll to the bottom and choose "Reset Data." This clears locally cached session data. Cloud-synced data can be deleted by contacting support below.</p>
+          </div>
+        </div>
+
+        <div class="border border-steel/20 rounded-2xl overflow-hidden bg-ocean/8">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-foam font-medium text-sm md:text-base">Is my breathing data stored on-device or in the cloud?</span>
+            <svg class="faq-chevron flex-shrink-0 ml-4" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64B4DC" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-body">
+            <p class="text-mist text-sm leading-relaxed px-6 pb-5">Session waveforms are processed on-device. If you sign in, anonymized summaries (rate, variability scores) are synced to secure cloud storage for cross-device access. Raw sensor streams are never uploaded. See our Privacy Policy below for full details.</p>
+          </div>
+        </div>
+
+        <div class="border border-steel/20 rounded-2xl overflow-hidden bg-ocean/8">
+          <button class="faq-toggle w-full flex items-center justify-between px-6 py-5 text-left" onclick="toggleFaq(this)">
+            <span class="text-foam font-medium text-sm md:text-base">The app isn't connecting to my sensor. What should I do?</span>
+            <svg class="faq-chevron flex-shrink-0 ml-4" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64B4DC" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-body">
+            <div class="px-6 pb-5 text-mist text-sm leading-relaxed space-y-1.5">
+              <p>Try these steps in order:</p>
+              <ol class="list-decimal pl-5 space-y-1">
+                <li>Ensure Bluetooth is on and Location permission is granted for the app.</li>
+                <li>Place the sensor within 1 m of your phone.</li>
+                <li>Force-quit Tidal Qi and reopen it.</li>
+                <li>Restart Bluetooth on your iPhone (toggle in Control Center).</li>
+              </ol>
+              <p class="pt-1">Still stuck? Email us and include your device model and iOS version.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Contact card -->
+      <div class="reveal border border-steel/30 bg-ocean/15 rounded-2xl p-7 md:p-9 flex flex-col md:flex-row md:items-center gap-6">
+        <div class="flex-1">
+          <h3 class="font-display text-2xl text-foam mb-2">Still have questions?</h3>
+          <p class="text-mist text-sm leading-relaxed">We typically reply within one business day. Include your iOS version and device model for fastest help.</p>
+        </div>
+        <a href="mailto:tidalbreathing.app@gmail.com"
+           class="btn-mailto inline-flex items-center gap-2.5 border border-steel/50 text-sky rounded-xl px-5 py-3 text-sm font-medium flex-shrink-0 transition-colors duration-300">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          tidalbreathing.app@gmail.com
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════ PRIVACY ══════════════════════════════════════ -->
+  <section id="privacy" class="py-24 md:py-32 bg-navy border-t border-steel/15">
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="reveal mb-10">
+        <p class="text-sky text-xs font-medium tracking-widest uppercase mb-3">Legal</p>
+        <h2 class="font-display text-4xl md:text-5xl text-foam">Privacy Policy</h2>
+        <p class="text-mist text-sm mt-3">Effective date: May 25, 2026</p>
+      </div>
+
+      <div class="reveal privacy-content border border-steel/20 bg-ocean/8 rounded-2xl p-7 md:p-9">
+
+        <p>This privacy policy applies to the <strong>Tidal Qi</strong> app (hereby referred to as "Application") for mobile devices that was created by the developer (hereby referred to as "Service Provider") as a Freemium service. This service is intended for use "AS IS".</p>
+
+        <h2>Information Collection and Use</h2>
+        <p>The Application collects information when you download and use it. This information may include information such as:</p>
+        <ul>
+          <li>Your device's Internet Protocol address (e.g. IP address)</li>
+          <li>The pages of the Application that you visit, the time and date of your visit, the time spent on those pages</li>
+          <li>The time spent on the Application</li>
+          <li>The operating system you use on your mobile device</li>
+        </ul>
+        <p>The Application does not gather precise information about the location of your mobile device.</p>
+        <p>The Service Provider may use the information you provided to contact you from time to time to provide you with important information, required notices and marketing promotions.</p>
+        <p>For a better experience, while using the Application, the Service Provider may require you to provide us with certain personally identifiable information, including but not limited to <strong>name, email address</strong>. The information that the Service Provider request will be retained by them and used as described in this privacy policy.</p>
+
+        <h2>Third Party Access</h2>
+        <p>Only aggregated, anonymized data is periodically transmitted to external services to aid the Service Provider in improving the Application and their service. The Service Provider may share your information with third parties in the ways that are described in this privacy statement.</p>
+        <p>Please note that the Application utilizes third-party services that have their own Privacy Policy about handling data. Below are the links to the Privacy Policy of the third-party service providers used by the Application:</p>
+        <ul>
+          <li>Google Play Services</li>
+          <li>Google Analytics for Firebase</li>
+          <li>Firebase Crashlytics</li>
+        </ul>
+        <p>The Service Provider may disclose User Provided and Automatically Collected Information:</p>
+        <ul>
+          <li>as required by law, such as to comply with a subpoena, or similar legal process;</li>
+          <li>when they believe in good faith that disclosure is necessary to protect their rights, protect your safety or the safety of others, investigate fraud, or respond to a government request;</li>
+          <li>with their trusted services providers who work on their behalf, do not have an independent use of the information we disclose to them, and have agreed to adhere to the rules set forth in this privacy statement.</li>
+        </ul>
+
+        <h2>Opt-Out Rights</h2>
+        <p>You can stop all collection of information by the Application easily by uninstalling it. You may use the standard uninstall processes as may be available as part of your mobile device or via the mobile application marketplace or network.</p>
+
+        <h2>Data Retention Policy</h2>
+        <p>The Service Provider will retain User Provided data for as long as you use the Application and for a reasonable time thereafter. If you'd like them to delete User Provided Data that you have provided via the Application, please contact them at <strong>tidalbreathing.app@gmail.com</strong> and they will respond in a reasonable time.</p>
+
+        <h2>Children</h2>
+        <p>The Service Provider does not use the Application to knowingly solicit data from or market to children under the age of 13.</p>
+        <p>The Application does not address anyone under the age of 13. The Service Provider does not knowingly collect personally identifiable information from children under 13 years of age. In the case the Service Provider discovers that a child under 13 has provided personal information, the Service Provider will immediately delete this from their servers. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact the Service Provider (<strong>tidalbreathing.app@gmail.com</strong>) so that they will be able to take the necessary actions.</p>
+
+        <h2>Security</h2>
+        <p>The Service Provider is concerned about safeguarding the confidentiality of your information. The Service Provider provides physical, electronic, and procedural safeguards to protect information the Service Provider processes and maintains.</p>
+
+        <h2>Changes</h2>
+        <p>This Privacy Policy may be updated from time to time for any reason. The Service Provider will notify you of any changes to the Privacy Policy by updating this page with the new Privacy Policy. You are advised to consult this Privacy Policy regularly for any changes, as continued use is deemed approval of all changes.</p>
+
+        <h2>Your Consent</h2>
+        <p>By using the Application, you are consenting to the processing of your information as set forth in this Privacy Policy now and as amended by us.</p>
+
+        <h2>Contact Us</h2>
+        <p>If you have any questions regarding privacy while using the Application, or have questions about the practices, please contact the Service Provider via email at <strong>tidalbreathing.app@gmail.com</strong>.</p>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════ FOOTER ══════════════════════════════════════ -->
+  <footer class="py-12 border-t border-steel/15 bg-navy">
+    <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-2.5">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="7" fill="#0D2B4A"/>
+          <path d="M3 16 Q6 16 7 13 Q9 7 11 13 Q13 19 15 11 Q17 3 19 11 Q21 19 23 13 Q25 7 27 13 Q28 16 29 16"
+            stroke="#64B4DC" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="font-display text-foam text-base">Tidal Qi</span>
+      </div>
+      <div class="flex flex-wrap justify-center gap-6 text-xs text-mist">
+        <a href="#features" class="nav-link hover:text-sky transition-colors">Features</a>
+        <a href="#support"  class="nav-link hover:text-sky transition-colors">Support</a>
+        <a href="#privacy"  class="nav-link hover:text-sky transition-colors">Privacy Policy</a>
+        <a href="mailto:tidalbreathing.app@gmail.com" class="nav-link hover:text-sky transition-colors">Contact</a>
+      </div>
+      <p class="text-slate text-xs">© 2026 Tidal Qi. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ── FAQ accordion ──
+    function toggleFaq(btn) {
+      const body    = btn.nextElementSibling;
+      const chevron = btn.querySelector('.faq-chevron');
+      const isOpen  = body.classList.contains('open');
+
+      // Close all
+      document.querySelectorAll('.faq-body').forEach(b  => b.classList.remove('open'));
+      document.querySelectorAll('.faq-chevron').forEach(c => c.classList.remove('open'));
+
+      // Open clicked if it was closed
+      if (!isOpen) {
+        body.classList.add('open');
+        chevron.classList.add('open');
+      }
+    }
+
+    // ── Scroll reveal ──
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          // Stagger siblings
+          const siblings = e.target.parentElement.querySelectorAll('.reveal');
+          siblings.forEach((el, i) => {
+            setTimeout(() => el.classList.add('visible'), i * 80);
+          });
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
